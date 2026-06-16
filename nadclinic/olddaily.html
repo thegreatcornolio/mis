@@ -7,42 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Wix+Madefor+Text:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
-/* ── AGENT MODAL ── */
-let agentChart = null;
-function showAgentModal(a) {
-  const d = new Date(S.date);
-  document.getElementById('am-name').textContent = a.AgentName;
-  document.getElementById('am-date').textContent = d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const occ=parseFloat(a.OccupiedPercent)||0, missed=parseInt(a.Missed)||0, sla=parseInt(a.OutsideSLA)||0;
-  const missedClass=missed===0?'badge-green':missed<3?'badge-orange':'badge-red';
-  document.getElementById('am-kpis').innerHTML=`
-    <div class="am-kpi"><div class="am-kv">${a.Total||0}</div><div class="am-kl">Total</div></div>
-    <div class="am-kpi"><div class="am-kv">${a.AnsIn||0}</div><div class="am-kl">Inbound</div></div>
-    <div class="am-kpi"><div class="am-kv">${a.AnsOut||0}</div><div class="am-kl">Outbound</div></div>
-    <div class="am-kpi"><div class="am-kv"><span class="missed-badge ${missedClass}">${missed}</span></div><div class="am-kl">Missed</div></div>
-    <div class="am-kpi"><div class="am-kv">${fmtSec(a.AHTSec)}</div><div class="am-kl">AHT</div></div>
-    <div class="am-kpi"><div class="am-kv">${fmtPct(occ)}</div><div class="am-kl">Utilisation</div></div>`;
-  const comm=parseInt(a.CommunicationSec)||0,idle=parseInt(a.IdleSec)||0,wrap=parseInt(a.WrapUpSec)||0,tot=comm+idle+wrap||1;
-  if(agentChart){agentChart.destroy();agentChart=null;}
-  agentChart=new Chart(document.getElementById('am-chart').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['Communicating','Idle','Wrap-up'],datasets:[{data:[comm,idle,wrap],backgroundColor:['#4AFD0E','#e2e1dd','#3b82f6'],borderWidth:0}]},
-    options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtSec(c.raw)}`}}},responsive:false}
-  });
-  document.getElementById('am-legend').innerHTML=[['Communicating',comm,'#4AFD0E'],['Idle',idle,'#e2e1dd'],['Wrap-up',wrap,'#3b82f6']].map(([l,v,c])=>`
-    <div class="am-leg-row"><span class="am-leg-dot" style="background:${c}"></span><span class="am-leg-lbl">${l}</span><span class="am-leg-val">${fmtSec(v)}</span><span class="am-leg-pct">${Math.round(v/tot*100)}%</span></div>`).join('');
-  const csat=a.AvgCSAT&&parseFloat(a.AvgCSAT)>0?parseFloat(a.AvgCSAT).toFixed(1):'—', csatCount=parseInt(a.CSATCount)||0;
-  document.getElementById('am-quality').innerHTML=`
-    <div class="am-qual-row"><span class="am-qual-lbl">Avg CSAT</span><span class="am-qual-val">${csat}${csatCount>0?' ('+csatCount+' ratings)':''}</span></div>
-    <div class="am-qual-row"><span class="am-qual-lbl">Outside SLA</span><span class="am-qual-val"><span class="missed-badge ${sla===0?'badge-green':sla<3?'badge-orange':'badge-red'}">${sla}</span></span></div>
-    <div class="am-qual-row"><span class="am-qual-lbl">Rejected</span><span class="am-qual-val">${parseInt(a.Rejected)||0}</span></div>`;
-  document.getElementById('agent-modal').classList.add('show');
-}
-function closeAgentModal(){document.getElementById('agent-modal').classList.remove('show');if(agentChart){agentChart.destroy();agentChart=null;}}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAgentModal();});
-document.getElementById('agent-modal').addEventListener('click',function(e){if(e.target===this)closeAgentModal();});
-</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
   <style>
     :root {
       --navy:#1e1e1e; --navy2:#2a2a2a; --green:#4AFD0E; --green-light:#edffd6;
@@ -165,34 +130,6 @@ document.getElementById('agent-modal').addEventListener('click',function(e){if(e
 
     .skel{background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
     @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-
-
-    /* AGENT MODAL */
-    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
-    .modal-backdrop.show{display:flex}
-    .agent-modal-box{background:var(--surface);border-radius:var(--radius-xl);width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,0.2);overflow:hidden;max-height:90vh;overflow-y:auto}
-    .am-header{display:flex;align-items:flex-start;justify-content:space-between;padding:24px 24px 0;background:var(--navy)}
-    .am-name{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:800;color:#fff;margin-bottom:4px}
-    .am-date{font-size:12px;color:rgba(255,255,255,0.45);padding-bottom:20px}
-    .am-close{background:transparent;border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s}
-    .am-close:hover{background:rgba(255,255,255,0.1);color:#fff}
-    .am-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-bottom:1px solid var(--border)}
-    .am-kpi{background:var(--surface);padding:16px;text-align:center}
-    .am-kv{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:800;color:var(--text);margin-bottom:3px}
-    .am-kl{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:0.07em;text-transform:uppercase;color:var(--text3)}
-    .am-section-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text3);padding:16px 24px 8px}
-    .am-chart-row{display:flex;align-items:center;gap:20px;padding:0 24px 16px}
-    .am-legend{flex:1}
-    .am-leg-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-    .am-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-    .am-leg-lbl{flex:1;font-size:12px;color:var(--text2)}
-    .am-leg-val{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text)}
-    .am-leg-pct{font-size:11px;color:var(--text3);width:32px;text-align:right}
-    .am-quality{padding:0 24px 24px}
-    .am-qual-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
-    .am-qual-row:last-child{border-bottom:none}
-    .am-qual-lbl{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;color:var(--text2)}
-    .am-qual-val{font-size:13px;color:var(--text)}
 
     @media(max-width:960px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.two-col,.three-col{grid-template-columns:1fr}}
     @media(max-width:640px){.nav{padding:0 16px}.hero-inner,.container,.import-bar{padding-left:16px;padding-right:16px}.kpi-grid{grid-template-columns:1fr 1fr}.hero-inner{flex-direction:column;align-items:flex-start}}
@@ -351,8 +288,7 @@ function initials(n){return (n||'?').split(' ').map(w=>w[0]).slice(0,2).join('')
 function fmtSec(s){ if(!s&&s!==0) return '—'; const m=Math.floor(s/60),sec=Math.round(s%60); return m?`${m}m ${sec}s`:`${sec}s`; }
 function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}
 function fmtPct(v){if(v===null||v===undefined||v==='')return'—';return parseFloat(v).toFixed(1)+'%';}
-function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
-function yesterday(){const d=new Date();d.setDate(d.getDate()-1);return localDate(d);}
+function yesterday(){const d=new Date();d.setDate(d.getDate()-1);return d.toISOString().split('T')[0];}
 
 /* ── state ── */
 let S = { session:null, campaign:'NADClinic', date: yesterday(), deptChart: null };
@@ -530,8 +466,8 @@ function renderAgents(rows) {
     const csat  = a.AvgCSAT && parseFloat(a.AvgCSAT)>0 ? parseFloat(a.AvgCSAT).toFixed(1) : '—';
     const missedClass = missed===0?'badge-green':missed<3?'badge-orange':'badge-red';
     const slaClass    = sla===0  ?'badge-green':sla<3   ?'badge-orange':'badge-red';
-    return `<tr style="cursor:pointer" onclick="showAgentModal(${JSON.stringify(a).replace(/'/g,'&#39;')})">
-      <td><span class="agent-name" style="color:var(--blue);text-decoration:underline;text-decoration-color:rgba(41,128,185,0.3)">${a.AgentName}</span></td>
+    return `<tr>
+      <td><span class="agent-name">${a.AgentName}</span></td>
       <td><strong>${a.Total||0}</strong></td>
       <td>${a.AnsIn||0}</td>
       <td>${a.AnsOut||0}</td>
@@ -596,63 +532,6 @@ function renderImport(imp) {
   dot.className = 'import-dot '+(ok?'dot-green':'dot-red');
   txt.textContent = `Last import: ${fmtDate(imp.ImportedAt)} · ${imp.Status}`;
 }
-
-/* ── AGENT MODAL ── */
-let agentChart = null;
-function showAgentModal(a) {
-  const d = new Date(S.date);
-  document.getElementById('am-name').textContent = a.AgentName;
-  document.getElementById('am-date').textContent = d.toLocaleDateString('en-ZA',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const occ=parseFloat(a.OccupiedPercent)||0, missed=parseInt(a.Missed)||0, sla=parseInt(a.OutsideSLA)||0;
-  const missedClass=missed===0?'badge-green':missed<3?'badge-orange':'badge-red';
-  document.getElementById('am-kpis').innerHTML=`
-    <div class="am-kpi"><div class="am-kv">${a.Total||0}</div><div class="am-kl">Total</div></div>
-    <div class="am-kpi"><div class="am-kv">${a.AnsIn||0}</div><div class="am-kl">Inbound</div></div>
-    <div class="am-kpi"><div class="am-kv">${a.AnsOut||0}</div><div class="am-kl">Outbound</div></div>
-    <div class="am-kpi"><div class="am-kv"><span class="missed-badge ${missedClass}">${missed}</span></div><div class="am-kl">Missed</div></div>
-    <div class="am-kpi"><div class="am-kv">${fmtSec(a.AHTSec)}</div><div class="am-kl">AHT</div></div>
-    <div class="am-kpi"><div class="am-kv">${fmtPct(occ)}</div><div class="am-kl">Utilisation</div></div>`;
-  const comm=parseInt(a.CommunicationSec)||0,idle=parseInt(a.IdleSec)||0,wrap=parseInt(a.WrapUpSec)||0,tot=comm+idle+wrap||1;
-  if(agentChart){agentChart.destroy();agentChart=null;}
-  agentChart=new Chart(document.getElementById('am-chart').getContext('2d'),{
-    type:'doughnut',
-    data:{labels:['Communicating','Idle','Wrap-up'],datasets:[{data:[comm,idle,wrap],backgroundColor:['#4AFD0E','#e2e1dd','#3b82f6'],borderWidth:0}]},
-    options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtSec(c.raw)}`}}},responsive:false}
-  });
-  document.getElementById('am-legend').innerHTML=[['Communicating',comm,'#4AFD0E'],['Idle',idle,'#e2e1dd'],['Wrap-up',wrap,'#3b82f6']].map(([l,v,c])=>`
-    <div class="am-leg-row"><span class="am-leg-dot" style="background:${c}"></span><span class="am-leg-lbl">${l}</span><span class="am-leg-val">${fmtSec(v)}</span><span class="am-leg-pct">${Math.round(v/tot*100)}%</span></div>`).join('');
-  const csat=a.AvgCSAT&&parseFloat(a.AvgCSAT)>0?parseFloat(a.AvgCSAT).toFixed(1):'—', csatCount=parseInt(a.CSATCount)||0;
-  document.getElementById('am-quality').innerHTML=`
-    <div class="am-qual-row"><span class="am-qual-lbl">Avg CSAT</span><span class="am-qual-val">${csat}${csatCount>0?' ('+csatCount+' ratings)':''}</span></div>
-    <div class="am-qual-row"><span class="am-qual-lbl">Outside SLA</span><span class="am-qual-val"><span class="missed-badge ${sla===0?'badge-green':sla<3?'badge-orange':'badge-red'}">${sla}</span></span></div>
-    <div class="am-qual-row"><span class="am-qual-lbl">Rejected</span><span class="am-qual-val">${parseInt(a.Rejected)||0}</span></div>`;
-  document.getElementById('agent-modal').classList.add('show');
-}
-function closeAgentModal(){document.getElementById('agent-modal').classList.remove('show');if(agentChart){agentChart.destroy();agentChart=null;}}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAgentModal();});
-document.getElementById('agent-modal').addEventListener('click',function(e){if(e.target===this)closeAgentModal();});
 </script>
-
-<!-- AGENT MODAL -->
-<div class="modal-backdrop" id="agent-modal">
-  <div class="agent-modal-box">
-    <div class="am-header">
-      <div>
-        <div class="am-name" id="am-name"></div>
-        <div class="am-date" id="am-date"></div>
-      </div>
-      <button class="am-close" onclick="closeAgentModal()">&#10005;</button>
-    </div>
-    <div class="am-kpi-grid" id="am-kpis"></div>
-    <div class="am-section-label">Time breakdown</div>
-    <div class="am-chart-row">
-      <canvas id="am-chart" width="140" height="140" style="flex-shrink:0"></canvas>
-      <div id="am-legend" class="am-legend"></div>
-    </div>
-    <div class="am-section-label">Quality</div>
-    <div class="am-quality" id="am-quality"></div>
-  </div>
-</div>
-
 </body>
 </html>
