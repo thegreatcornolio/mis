@@ -283,31 +283,21 @@ async function loadData(){
 
 function renderKPIs(t,daily){
   const total=parseInt(t.TotalConvs)||0;
+  const email=parseInt(t.EmailCount)||0;
+  const voice=parseInt(t.VoiceCount)||0;
+  const wa=parseInt(t.WhatsAppCount)||0;
   const active=parseInt(t.ActiveDays)||1;
   const avgDay=active?Math.round(total/active):0;
   const inbPct=total?Math.round((parseInt(t.InboundCount)||0)/total*100):0;
-  const aht=fmtSec(t.AvgDurationSec);
-  document.getElementById('kpi-grid').innerHTML=`
-    <div class="kpi-card">
-      <div class="kpi-label">Total conversations</div>
-      <div class="kpi-value">${total.toLocaleString()}</div>
-      <div class="kpi-sub">${active} active day${active!==1?'s':''} this month</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Daily average</div>
-      <div class="kpi-value">${avgDay.toLocaleString()}</div>
-      <div class="kpi-sub">Conversations per active day</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Inbound rate</div>
-      <div class="kpi-value">${inbPct}%</div>
-      <div class="kpi-sub">${t.InboundCount||0} inbound conversations</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-label">Avg handle time</div>
-      <div class="kpi-value" style="font-size:22px;margin-top:4px">${aht}</div>
-      <div class="kpi-sub">Per conversation</div>
-    </div>`;
+  const emailAHT=fmtSec(t.AvgEmailAgentSec);
+  const voiceAHT=fmtSec(t.AvgVoiceHandleSec);
+  const waAHT=fmtSec(t.AvgWhatsAppAgentSec);
+  document.getElementById('kpi-grid').innerHTML=[
+    `<div class="kpi-card"><div class="kpi-label">Total conversations</div><div class="kpi-value">${total.toLocaleString()}</div><div class="kpi-sub">${email} email · ${voice} voice · ${wa} WhatsApp</div></div>`,
+    `<div class="kpi-card"><div class="kpi-label">Daily average</div><div class="kpi-value">${avgDay.toLocaleString()}</div><div class="kpi-sub">${active} active days · ${inbPct}% inbound</div></div>`,
+    `<div class="kpi-card"><div class="kpi-label">Handle time by channel</div><div style="margin-top:10px;display:flex;flex-direction:column;gap:8px"><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">📧 Email</span><span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700">${emailAHT}</span></div><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">📞 Voice</span><span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700">${voiceAHT}</span></div><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text3)">💬 WhatsApp</span><span style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700">${waAHT}</span></div></div></div>`,
+    `<div class="kpi-card"><div class="kpi-label">Inbound rate</div><div class="kpi-value">${inbPct}%</div><div class="kpi-sub">${t.InboundCount||0} inbound conversations</div></div>`,
+  ].join('');
 }
 
 function renderVolumeChart(daily){
