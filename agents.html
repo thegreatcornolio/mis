@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trilogy · MIS · Agent Performance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Wix+Madefor+Text:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <style>
+    :root{--navy:#1e1e1e;--navy2:#2a2a2a;--green:#4AFD0E;--green-light:#edffd6;--green-dark:#2a8a00;--offwhite:#F7F6F2;--border:#e2e1dd;--border2:#c8c7c3;--surface:#fff;--bg:#e8e7e3;--text:#1B2A4A;--text2:#4A5568;--text3:#7a8499;--radius:8px;--radius-lg:12px;--radius-xl:16px;--red:#c0392b;--orange:#e67e22;--blue:#2980b9}
+    html{scroll-behavior:smooth;overflow-x:hidden}body{font-family:'Wix Madefor Text',sans-serif;background:var(--bg);color:var(--text);font-size:14px;margin:0;overflow-x:hidden}*{box-sizing:border-box}
+    .nav{background:var(--navy);height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;position:sticky;top:0;z-index:100}
+    .nav-left{display:flex;align-items:center;gap:12px}.nav-divider{width:1px;height:24px;background:rgba(255,255,255,0.15)}
+    .nav-section{color:rgba(255,255,255,0.65);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:0.09em;text-transform:uppercase}
+    .nav-back{color:rgba(255,255,255,0.45);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;text-decoration:none;padding:6px 10px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;transition:all .15s}
+    .nav-back:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.06)}
+    .nav-right{display:flex;align-items:center;gap:10px}
+    .nav-avatar{width:34px;height:34px;border-radius:50%;background:var(--green);color:var(--navy);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid rgba(74,253,14,0.4)}
+    .nav-name{color:rgba(255,255,255,.8);font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600}
+    .btn-signout{background:transparent;border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.55);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .18s}
+    .btn-signout:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.9)}
+    /* TAB NAV */
+    .tab-nav{background:var(--offwhite);border-bottom:1px solid var(--border)}
+    .tab-nav-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;gap:2px}
+    .tab-link{padding:11px 16px;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3);text-decoration:none;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;white-space:nowrap}
+    .tab-link:hover{color:var(--text)}.tab-link.active{color:var(--text);border-bottom-color:var(--green)}
+    /* HERO */
+    .hero{background:var(--navy);padding:32px 0 28px}
+    .hero-inner{max-width:1200px;margin:0 auto;padding:0 32px;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+    .hero-label{color:var(--green);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px}
+    .hero-title{color:#fff;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;line-height:1.15}
+    .hero-sub{color:rgba(255,255,255,.38);font-size:13px;margin-top:4px}
+    .range-nav{display:flex;align-items:center;gap:8px}
+    .range-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);height:34px;padding:0 12px;border-radius:var(--radius);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;transition:all .15s}
+    .range-btn:hover{background:rgba(255,255,255,.14)}
+    .range-btn.active-range{background:rgba(74,253,14,.15);border-color:rgba(74,253,14,.4);color:var(--green)}
+    /* CONTAINER */
+    .container{max-width:1200px;margin:0 auto;padding:24px 32px 56px}
+    /* AGENT CARDS GRID */
+    .agents-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+    .agent-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:20px;cursor:pointer;transition:all .18s;position:relative}
+    .agent-card:hover{border-color:var(--green);box-shadow:0 4px 16px rgba(74,253,14,.1);transform:translateY(-1px)}
+    .agent-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+    .agent-av{width:48px;height:48px;border-radius:50%;background:var(--navy);color:#fff;font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .agent-av.av0{background:#1e3a5f}.agent-av.av1{background:#1a4731}.agent-av.av2{background:#4a1942}.agent-av.av3{background:#3d2b00}.agent-av.av4{background:#1a1a4f}
+    .agent-namerow{flex:1}
+    .agent-fullname{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:var(--text);margin-bottom:3px}
+    .agent-role{font-size:12px;color:var(--text3)}
+    .agent-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+    .am-cell{text-align:center;padding:8px 4px;background:var(--offwhite);border-radius:var(--radius)}
+    .am-val{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:var(--text);line-height:1}
+    .am-lbl{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-top:3px}
+    /* UTIL BAR */
+    .util-section{margin-bottom:4px}
+    .util-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+    .util-label{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--text3)}
+    .util-pct{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text)}
+    .util-track{height:8px;background:var(--bg);border-radius:4px;overflow:hidden;display:flex}
+    .util-seg{height:100%;transition:width .8s ease}
+    .seg-comm{background:#4AFD0E}.seg-wrap{background:#3b82f6}.seg-pause{background:#f59e0b}.seg-idle{background:#e2e1dd}.seg-hold{background:#c0392b}
+    .util-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+    .leg-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)}
+    .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    /* MODAL */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-backdrop.show{display:flex}
+    .agent-modal{background:var(--surface);border-radius:var(--radius-xl);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+    .am-head{background:var(--navy);padding:24px;display:flex;align-items:center;justify-content:space-between}
+    .am-title{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:800;color:#fff}
+    .am-sub{color:rgba(255,255,255,.45);font-size:12px;margin-top:3px}
+    .am-close{background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+    .am-close:hover{background:rgba(255,255,255,.1);color:#fff}
+    .am-section{padding:20px 24px;border-bottom:1px solid var(--border)}
+    .am-section:last-child{border-bottom:none}
+    .am-section-title{font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:14px}
+    .am-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+    .am-kpi{background:var(--surface);padding:14px;text-align:center}
+    .am-kv{font-family:'Montserrat',sans-serif;font-size:18px;font-weight:800;color:var(--text);margin-bottom:3px}
+    .am-kl{font-family:'Montserrat',sans-serif;font-size:9px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text3)}
+    .am-chart-row{display:flex;align-items:center;gap:20px}
+    .am-legend-list{flex:1}
+    .am-leg-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .am-leg-row:last-child{margin-bottom:0}
+    .am-leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .am-leg-lbl{flex:1;font-size:12px;color:var(--text2)}
+    .am-leg-time{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--text)}
+    .am-leg-pct{font-size:11px;color:var(--text3);width:36px;text-align:right}
+    /* DAILY TREND */
+    .trend-section{padding:20px 24px}
+    /* BADGES */
+    .badge{display:inline-block;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
+    .badge-green{background:var(--green-light);color:var(--green-dark)}.badge-orange{background:#fef3c7;color:#92400e}.badge-red{background:#fee2e2;color:var(--red)}.badge-grey{background:var(--bg);color:var(--text3)}
+    /* EMPTY / LOADING */
+    .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);text-align:center}
+    .empty-ico{font-size:40px;margin-bottom:12px}.empty-sub{font-size:13px}
+    #loading-overlay{position:fixed;inset:0;background:rgba(232,231,227,.85);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:1000;flex-direction:column;gap:14px}
+    .load-spinner{width:36px;height:36px;border:3px solid rgba(30,30,30,.12);border-top-color:var(--navy);border-radius:50%;animation:spin .75s linear infinite}
+    .load-txt{font-family:'Montserrat',sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3)}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .skel{background:linear-gradient(90deg,var(--bg) 25%,var(--border) 50%,var(--bg) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+    @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+    .import-bar{background:var(--offwhite);border-top:1px solid var(--border);padding:10px 32px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text3)}
+    .import-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .dot-green{background:var(--green)}.dot-orange{background:var(--orange)}.dot-red{background:var(--red)}
+    @media(max-width:960px){.agents-grid{grid-template-columns:1fr}}
+    @media(max-width:640px){.nav{padding:0 16px}.hero-inner,.container,.import-bar{padding-left:16px;padding-right:16px}.hero-inner{flex-direction:column;align-items:flex-start}.agent-metrics{grid-template-columns:repeat(2,1fr)}.am-kpi-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="load-spinner"></div>
+  <div class="load-txt">Loading agent data…</div>
+</div>
+
+<!-- AGENT DETAIL MODAL -->
+<div class="modal-backdrop" id="agent-modal">
+  <div class="agent-modal">
+    <div class="am-head">
+      <div>
+        <div class="am-title" id="am-name"></div>
+        <div class="am-sub" id="am-range"></div>
+      </div>
+      <button class="am-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="am-section">
+      <div class="am-section-title">Performance summary</div>
+      <div class="am-kpi-grid" id="am-kpis"></div>
+    </div>
+    <div class="am-section">
+      <div class="am-section-title">Time utilisation breakdown</div>
+      <div class="am-chart-row">
+        <canvas id="am-chart" width="150" height="150" style="flex-shrink:0"></canvas>
+        <div class="am-legend-list" id="am-legend"></div>
+      </div>
+    </div>
+    <div class="trend-section" id="am-trend-section">
+      <div class="am-section-title">Daily volume trend</div>
+      <canvas id="am-trend-chart" height="120"></canvas>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none">
+  <nav class="nav">
+    <div class="nav-left">
+      <img src="/trilogy-logo.png" alt="Trilogy" style="height:28px">
+      <div class="nav-divider"></div>
+      <div class="nav-section">MIS Dashboard</div>
+      <div class="nav-divider"></div>
+      <a class="nav-back" href="../index.html">← Campaigns</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-avatar" id="nav-av"></div>
+      <span class="nav-name" id="nav-name"></span>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </nav>
+
+  <div class="tab-nav"><div id="tab-nav-inner" class="tab-nav-inner"></div></div>
+
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-label" id="hero-campaign">NADClinic · Agent Performance</div>
+        <div class="hero-title">Agent Performance</div>
+        <div class="hero-sub" id="hero-sub">Loading…</div>
+      </div>
+      <div class="range-nav">
+        <button class="range-btn active-range" onclick="setRange(7,this)">7 days</button>
+        <button class="range-btn" onclick="setRange(14,this)">14 days</button>
+        <button class="range-btn" onclick="setRange(30,this)">30 days</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="agents-grid" id="agents-grid">
+      <div class="agent-card"><div class="skel" style="height:160px"></div></div>
+      <div class="agent-card"><div class="skel" style="height:160px"></div></div>
+      <div class="agent-card"><div class="skel" style="height:160px"></div></div>
+      <div class="agent-card"><div class="skel" style="height:160px"></div></div>
+    </div>
+  </div>
+
+  <div class="import-bar">
+    <div class="import-dot" id="import-dot"></div>
+    <span id="import-txt">Checking import status…</span>
+  </div>
+</div>
+
+<script>
+'use strict';
+const SESSION_KEY='mis_session';
+const FLOWS={ GET_AGENTS:'https://default77cde95f930f495e89c64d2c30f6df.21.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/a31897f77c5240cfa553add671d87c08/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=BCq1A1VzWGUdDo08lTCK4GujVSl5srTZwoJuSdtZR-M' };
+
+function unwrap(d){return d.body?(typeof d.body==='string'?JSON.parse(d.body):d.body):d;}
+async function callFlow(url,body={},attempt=0){
+  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok){if(r.status>=500&&attempt<3){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw new Error('Flow HTTP '+r.status);}
+  return unwrap(await r.json());}
+  catch(e){if(attempt<3&&!e.message?.startsWith('Flow HTTP')){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw e;}
+}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function initials(n){return(n||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
+function localDate(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return`${y}-${m}-${day}`;}
+function fmtSec(s){if(!s&&s!==0)return'—';s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;if(h>0)return`${h}h ${m}m`;if(m>0)return`${m}m ${sec}s`;return`${sec}s`;}
+function fmtPct(v){if(v===null||v===undefined)return'—';return parseFloat(v).toFixed(1)+'%';}
+function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'});}
+function parseIso(v){if(!v)return null;if(typeof v==='string'){const d=v.match(/\/Date\((\d+)/);if(d)return new Date(parseInt(d[1]));return new Date(v);}return new Date(v);}
+
+let S={session:null,campaign:'NADClinic',days:7,agentChart:null,trendChart:null,allAgents:[],dailyData:[]};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  const raw=sessionStorage.getItem(SESSION_KEY);
+  if(!raw){window.location.href='../index.html';return;}
+  S.session=JSON.parse(raw);
+  const params=new URLSearchParams(window.location.search);
+  S.campaign=params.get('campaign')||(S.session.campaigns[0])||'NADClinic';
+  document.getElementById('nav-av').textContent=initials(S.session.displayName);
+  document.getElementById('nav-name').textContent=S.session.displayName.split(' ')[0];
+  document.getElementById('hero-campaign').textContent=S.campaign+' · Agent Performance';
+  document.getElementById('app').style.display='block';
+  setTabNav('agents');
+  loadData();
+});
+
+function setTabNav(active){
+  const c=encodeURIComponent(S.campaign);
+  document.getElementById('tab-nav-inner').innerHTML=[
+    ['daily','📊 Daily',`daily.html?campaign=${c}`],
+    ['weekly','📈 Weekly',`weekly.html?campaign=${c}`],
+    ['monthly','📅 Monthly',`monthly.html?campaign=${c}`],
+    ['agents','👤 Agents',`agents.html?campaign=${c}`],
+    ['queue','⏱ Queue',`queue.html?campaign=${c}`],
+  ].map(([id,lbl,href])=>`<a class="tab-link${id===active?' active':''}" href="${href}">${lbl}</a>`).join('');
+}
+
+function setRange(days,btn){
+  S.days=days;
+  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active-range'));
+  btn.classList.add('active-range');
+  loadData();
+}
+
+function getDateRange(){
+  const to=new Date();to.setDate(to.getDate()-1);
+  const from=new Date(to);from.setDate(from.getDate()-(S.days-1));
+  return{dateFrom:localDate(from),dateTo:localDate(to)};
+}
+
+function signOut(){sessionStorage.removeItem(SESSION_KEY);window.location.href='../index.html';}
+
+async function loadData(){
+  document.getElementById('loading-overlay').style.display='flex';
+  const{dateFrom,dateTo}=getDateRange();
+  document.getElementById('hero-sub').textContent=`${S.days} days · ${new Date(dateFrom).toLocaleDateString('en-ZA',{day:'numeric',month:'short'})} – ${new Date(dateTo).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})}`;
+  try{
+    const raw=await callFlow(FLOWS.GET_AGENTS,{campaignCode:S.campaign,dateFrom,dateTo});
+    const data=(raw&&raw.Table1)?raw:(raw&&raw.resultsets)?raw.resultsets:raw||{};
+    S.allAgents=data.Table1||[];
+    S.dailyData =data.Table2||[];
+    const imp=(data.Table3||[])[0]||{};
+    renderAgentCards(S.allAgents);
+    renderImport(imp);
+  }catch(err){
+    document.getElementById('agents-grid').innerHTML=`<div style="grid-column:span 2"><div class="empty-state"><div class="empty-ico">⚠️</div><div class="empty-sub">${err.message}</div></div></div>`;
+  }finally{
+    document.getElementById('loading-overlay').style.display='none';
+  }
+}
+
+function renderAgentCards(agents){
+  if(!agents.length){
+    document.getElementById('agents-grid').innerHTML='<div style="grid-column:span 2"><div class="empty-state"><div class="empty-ico">👤</div><div class="empty-sub">No agent data for this period.</div></div></div>';
+    return;
+  }
+  const avClasses=['av0','av1','av2','av3','av4'];
+  document.getElementById('agents-grid').innerHTML=agents.map((a,i)=>{
+    const occ=parseFloat(a.AvgOccupied)||0;
+    const missed=parseInt(a.Missed)||0;
+    const sla=parseInt(a.OutsideSLA)||0;
+    const mc=missed===0?'badge-green':missed<5?'badge-orange':'badge-red';
+    const total=parseInt(a.TotalLoggedSec)||1;
+    const comm=parseInt(a.TotalCommSec)||0;
+    const idle=parseInt(a.TotalIdleSec)||0;
+    const pause=parseInt(a.TotalPauseSec)||0;
+    const wrap=parseInt(a.TotalWrapSec)||0;
+    const commPct=Math.round(comm/total*100);
+    const wrapPct=Math.round(wrap/total*100);
+    const pausePct=Math.round(pause/total*100);
+    const idlePct=Math.round(idle/total*100);
+    const csat=a.AvgCSAT&&parseFloat(a.AvgCSAT)>0?parseFloat(a.AvgCSAT).toFixed(1):'—';
+    return`<div class="agent-card" onclick="showAgentDetail(${i})">
+      <div class="agent-head">
+        <div class="agent-av ${avClasses[i%avClasses.length]}">${initials(a.AgentName)}</div>
+        <div class="agent-namerow">
+          <div class="agent-fullname">${a.AgentName}</div>
+          <div class="agent-role">${a.DaysAttendance||0} days attended · CSAT: ${csat}</div>
+        </div>
+        <span class="badge ${mc}" style="margin-left:auto;flex-shrink:0">${missed} missed</span>
+      </div>
+      <div class="agent-metrics">
+        <div class="am-cell"><div class="am-val">${a.Total||0}</div><div class="am-lbl">Total</div></div>
+        <div class="am-cell"><div class="am-val">${fmtSec(a.AvgAHTSec)}</div><div class="am-lbl">Avg AHT</div></div>
+        <div class="am-cell"><div class="am-val">${fmtPct(occ)}</div><div class="am-lbl">Util.</div></div>
+        <div class="am-cell"><div class="am-val" style="color:${sla===0?'var(--green-dark)':'var(--red)'}">${sla}</div><div class="am-lbl">SLA</div></div>
+      </div>
+      <div class="util-section">
+        <div class="util-label-row">
+          <span class="util-label">Time utilisation</span>
+          <span class="util-pct">${fmtPct(occ)} occupied</span>
+        </div>
+        <div class="util-track">
+          <div class="util-seg seg-comm"  style="width:${commPct}%"  title="Communicating ${commPct}%"></div>
+          <div class="util-seg seg-wrap"  style="width:${wrapPct}%"  title="Wrap-up ${wrapPct}%"></div>
+          <div class="util-seg seg-pause" style="width:${pausePct}%" title="Pause ${pausePct}%"></div>
+          <div class="util-seg seg-idle"  style="width:${idlePct}%"  title="Idle ${idlePct}%"></div>
+        </div>
+        <div class="util-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#4AFD0E"></div>Comm ${commPct}%</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#3b82f6"></div>Wrap ${wrapPct}%</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Pause ${pausePct}%</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#e2e1dd"></div>Idle ${idlePct}%</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showAgentDetail(idx){
+  const a=S.allAgents[idx];
+  const{dateFrom,dateTo}=getDateRange();
+  document.getElementById('am-name').textContent=a.AgentName;
+  document.getElementById('am-range').textContent=
+    `${new Date(dateFrom).toLocaleDateString('en-ZA',{day:'numeric',month:'short'})} – ${new Date(dateTo).toLocaleDateString('en-ZA',{day:'numeric',month:'short',year:'numeric'})} · ${S.days} days`;
+  const missed=parseInt(a.Missed)||0;const sla=parseInt(a.OutsideSLA)||0;
+  const csat=a.AvgCSAT&&parseFloat(a.AvgCSAT)>0?parseFloat(a.AvgCSAT).toFixed(1):'—';
+  document.getElementById('am-kpis').innerHTML=`
+    <div class="am-kpi"><div class="am-kv">${a.Total||0}</div><div class="am-kl">Total</div></div>
+    <div class="am-kpi"><div class="am-kv">${a.AnsIn||0}</div><div class="am-kl">Inbound</div></div>
+    <div class="am-kpi"><div class="am-kv">${a.AnsOut||0}</div><div class="am-kl">Outbound</div></div>
+    <div class="am-kpi"><div class="am-kv">${missed}</div><div class="am-kl">Missed</div></div>
+    <div class="am-kpi"><div class="am-kv">${fmtSec(a.AvgAHTSec)}</div><div class="am-kl">Avg AHT</div></div>
+    <div class="am-kpi"><div class="am-kv">${fmtPct(a.AvgOccupied)}</div><div class="am-kl">Util.</div></div>
+    <div class="am-kpi"><div class="am-kv">${sla}</div><div class="am-kl">SLA</div></div>
+    <div class="am-kpi"><div class="am-kv">${csat}</div><div class="am-kl">CSAT</div></div>`;
+  // Donut chart
+  if(S.agentChart){S.agentChart.destroy();S.agentChart=null;}
+  const comm=parseInt(a.TotalCommSec)||0,wrap=parseInt(a.TotalWrapSec)||0,
+        pause=parseInt(a.TotalPauseSec)||0,idle=parseInt(a.TotalIdleSec)||0,
+        hold=parseInt(a.TotalHoldSec)||0,tot=comm+wrap+pause+idle+hold||1;
+  S.agentChart=new Chart(document.getElementById('am-chart').getContext('2d'),{
+    type:'doughnut',
+    data:{labels:['Communicating','Wrap-up','Pause','Idle','Hold'],
+          datasets:[{data:[comm,wrap,pause,idle,hold],backgroundColor:['#4AFD0E','#3b82f6','#f59e0b','#e2e1dd','#c0392b'],borderWidth:0}]},
+    options:{cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.label}: ${fmtSec(c.raw)} (${Math.round(c.raw/tot*100)}%)`}}},responsive:false}
+  });
+  document.getElementById('am-legend').innerHTML=
+    [['Communicating',comm,'#4AFD0E'],['Wrap-up',wrap,'#3b82f6'],['Pause',pause,'#f59e0b'],['Idle',idle,'#e2e1dd'],['Hold',hold,'#c0392b']]
+    .map(([l,v,c])=>`<div class="am-leg-row"><div class="am-leg-dot" style="background:${c}"></div><span class="am-leg-lbl">${l}</span><span class="am-leg-time">${fmtSec(v)}</span><span class="am-leg-pct">${Math.round(v/tot*100)}%</span></div>`).join('');
+  // Daily trend chart
+  const agentDaily=S.dailyData.filter(d=>d.AgentName===a.AgentName)
+    .sort((a,b)=>a.ReportDate>b.ReportDate?1:-1);
+  if(S.trendChart){S.trendChart.destroy();S.trendChart=null;}
+  if(agentDaily.length>1){
+    document.getElementById('am-trend-section').style.display='block';
+    const labels=agentDaily.map(d=>{const dt=parseIso(d.ReportDate);return dt&&!isNaN(dt)?dt.toLocaleDateString('en-ZA',{weekday:'short',day:'numeric',month:'short'}):d.ReportDate;});
+    S.trendChart=new Chart(document.getElementById('am-trend-chart').getContext('2d'),{
+      type:'bar',
+      data:{labels,datasets:[
+        {label:'Total',data:agentDaily.map(d=>parseInt(d.Total)||0),backgroundColor:'rgba(41,128,185,.3)',borderColor:'#2980b9',borderWidth:1,borderRadius:3},
+        {label:'Missed',data:agentDaily.map(d=>parseInt(d.Missed)||0),backgroundColor:'rgba(192,57,43,.5)',borderColor:'#c0392b',borderWidth:1,borderRadius:3}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{family:'Montserrat',size:10},padding:10}}},
+        scales:{x:{grid:{display:false},ticks:{font:{family:'Montserrat',size:10}}},y:{grid:{color:'#e2e1dd'},ticks:{font:{family:'Montserrat',size:10}},beginAtZero:true}}}
+    });
+  }else{document.getElementById('am-trend-section').style.display='none';}
+  document.getElementById('agent-modal').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('agent-modal').classList.remove('show');
+  if(S.agentChart){S.agentChart.destroy();S.agentChart=null;}
+  if(S.trendChart){S.trendChart.destroy();S.trendChart=null;}
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('agent-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function renderImport(imp){
+  if(!imp||!imp.Status){document.getElementById('import-txt').textContent='No import record found.';document.getElementById('import-dot').className='import-dot dot-orange';return;}
+  document.getElementById('import-dot').className='import-dot '+(imp.Status==='Success'?'dot-green':'dot-red');
+  document.getElementById('import-txt').textContent=`Last import: ${fmtDate(imp.ImportedAt)} · ${imp.Status}`;
+}
+</script>
+</body>
+</html>
