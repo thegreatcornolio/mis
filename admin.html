@@ -296,9 +296,9 @@ let S={session:null,users:[],campaigns:[],deleteTarget:null,editTarget:null};
 window.addEventListener('DOMContentLoaded',()=>{
   const raw=sessionStorage.getItem(SESSION_KEY);
   const adminUnlocked=sessionStorage.getItem(ADMIN_KEY);
-  if(!raw||!adminUnlocked){window.location.href='index.html';return;}
-  S.session=JSON.parse(raw);
-  if((S.session.role||'').toLowerCase()!=='admin'){window.location.href='index.html';return;}
+  if(!adminUnlocked){window.location.href='index.html';return;}
+  const _adminRaw=sessionStorage.getItem('mis_admin_session')||raw;
+  S.session=_adminRaw?JSON.parse(_adminRaw):{displayName:'Admin',role:'admin',campaigns:[]};
   document.getElementById('nav-av').textContent=initials(S.session.displayName);
   document.getElementById('nav-name').textContent=S.session.displayName.split(' ')[0];
   document.getElementById('f-active').addEventListener('change',e=>{

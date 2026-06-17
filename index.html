@@ -435,6 +435,8 @@ function checkAdmin() {
   const p = document.getElementById('admin-pass').value;
   if (u === CONFIG.adminUser && p === CONFIG.adminPass) {
     sessionStorage.setItem(ADMIN_KEY, '1');
+    const _s = sessionStorage.getItem(SESSION_KEY);
+    if (_s) sessionStorage.setItem('mis_admin_session', _s);
     closeAdminModal();
     window.location.href = 'admin.html';
   } else {
