@@ -279,7 +279,7 @@
       <table class="import-table">
         <thead>
           <tr>
-            <th>Date</th><th>Campaign</th><th>File type</th><th>Status</th><th>Imported at</th>
+            <th>Date</th><th>Campaign</th><th>File type</th><th>Records</th><th>Status</th><th>Imported at</th><th>Error</th>
           </tr>
         </thead>
         <tbody id="import-tbody">
@@ -479,8 +479,10 @@ function renderImports(rows){
       <td>${fmtDate(r.ReportDate)}</td>
       <td><span class="campaign-tag">${r.CampaignCode}</span></td>
       <td style="font-size:12px">${r.FileType||'—'}</td>
+      <td style="font-family:'Montserrat',sans-serif;font-weight:600">${r.RecordCount||0}</td>
       <td><span class="status-badge ${sClass}">${r.Status}</span></td>
       <td style="font-size:12px;color:var(--text3)">${fmtDateTime(r.ImportedAt)}</td>
+      <td style="font-size:12px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.ErrorMessage||''}</td>
     </tr>`;
   }).join('');
 }
