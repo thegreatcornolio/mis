@@ -48,20 +48,6 @@
     .card-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
     .ci-g{background:var(--green-light)}.ci-b{background:#dbeafe}.ci-t{background:#ccfbf1}.ci-o{background:#fef3c7}
     .card-body{padding:20px}
-    /* CHANNEL BREAKDOWN */
-    .ch-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border)}
-    .ch-cell{padding:18px 22px;border-right:1px solid var(--border)}
-    .ch-cell:last-child{border-right:none}
-    .ch-icon{font-size:18px;margin-bottom:6px}
-    .ch-name{font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
-    .ch-big{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;color:var(--text);line-height:1}
-    .ch-sub{font-size:11px;color:var(--text3);margin-top:3px}
-    .ch-stats{display:flex;gap:20px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
-    .ch-stat-item{display:flex;flex-direction:column;gap:2px}
-    .ch-stat-val{font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
-    .ch-stat-lbl{font-size:10px;color:var(--text3)}
-    .ch-empty{color:var(--text3);font-size:12px;display:flex;align-items:center;justify-content:center;padding:32px;gap:8px}
-    @media(max-width:640px){.ch-grid{grid-template-columns:1fr}}
     /* QUEUE TABLE */
     .q-table{width:100%;border-collapse:collapse;font-size:12px}
     .q-table th{text-align:left;padding:8px 14px;border-bottom:1px solid var(--border);font-family:'Montserrat',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
@@ -96,7 +82,7 @@
       <div class="nav-divider"></div>
       <div class="nav-section">MIS Dashboard</div>
       <div class="nav-divider"></div>
-      <a class="nav-back" href="../index.html">← Campaigns</a>
+      <a class="nav-back" href="../oldindex.html">← Campaigns</a>
     </div>
     <div class="nav-right">
       <div class="nav-avatar" id="nav-av"></div>
@@ -128,13 +114,6 @@
       <div class="kpi-card"><div class="skel" style="height:20px;margin-bottom:8px;width:80px"></div><div class="skel" style="height:36px;width:60px"></div></div>
       <div class="kpi-card"><div class="skel" style="height:20px;margin-bottom:8px;width:80px"></div><div class="skel" style="height:36px;width:60px"></div></div>
       <div class="kpi-card"><div class="skel" style="height:20px;margin-bottom:8px;width:80px"></div><div class="skel" style="height:36px;width:60px"></div></div>
-    </div>
-
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-header"><div class="card-title"><div class="card-icon ci-g">📡</div>Channel breakdown</div></div>
-      <div id="channel-breakdown" class="card-body" style="padding:0">
-        <div class="skel" style="height:80px;margin:16px"></div>
-      </div>
     </div>
 
     <div class="two-col">
@@ -239,9 +218,7 @@ async function loadData(){
     const queues=data.Table3||[];
     const hours =data.Table4||[];
     const imp   =(data.Table5||[])[0]||{};
-    const channels=data.Table6||[];
     renderKPIs(totals);
-    renderChannelBreakdown(channels);
     renderTrendChart(daily);
     renderHourChart(hours);
     renderQueueTable(queues);
@@ -251,38 +228,6 @@ async function loadData(){
   }finally{
     document.getElementById('loading-overlay').style.display='none';
   }
-}
-
-function renderChannelBreakdown(channels){
-  const el=document.getElementById('channel-breakdown');
-  const CHANNELS=[
-    {key:'Email',   icon:'✉️', label:'Email'},
-    {key:'Voice',   icon:'📞', label:'Voice'},
-    {key:'WhatsApp',icon:'💬', label:'WhatsApp'},
-  ];
-  const byType={};
-  (channels||[]).forEach(c=>{byType[c.ChannelType]=c;});
-  el.innerHTML=`<div class="ch-grid">${CHANNELS.map(ch=>{
-    const d=byType[ch.key];
-    if(!d)return`<div class="ch-cell">
-      <div class="ch-icon">${ch.icon}</div>
-      <div class="ch-name">${ch.label}</div>
-      <div class="ch-empty">No data yet</div>
-    </div>`;
-    const rate=parseFloat(d.AnswerRate)||0;
-    const rateClass=rate>=90?'badge-green':rate>=75?'badge-orange':'badge-red';
-    return`<div class="ch-cell">
-      <div class="ch-icon">${ch.icon}</div>
-      <div class="ch-name">${ch.label}</div>
-      <div class="ch-big">${parseInt(d.TotalOffered)||0}</div>
-      <div class="ch-sub">${parseInt(d.TotalAnswered)||0} answered · <span class="kpi-badge ${rateClass}" style="font-size:10px">${rate.toFixed(1)}%</span></div>
-      <div class="ch-stats">
-        <div class="ch-stat-item"><div class="ch-stat-val">${fmtSec(d.AvgWaitSec)}</div><div class="ch-stat-lbl">Avg wait</div></div>
-        <div class="ch-stat-item"><div class="ch-stat-val">${fmtSec(d.AvgHandleSec)}</div><div class="ch-stat-lbl">Avg handle</div></div>
-        <div class="ch-stat-item"><div class="ch-stat-val">${fmtSec(d.MaxWaitSec)}</div><div class="ch-stat-lbl">Max wait</div></div>
-      </div>
-    </div>`;
-  }).join('')}</div>`;
 }
 
 function renderKPIs(t){
