@@ -39,7 +39,7 @@
     .login-box { background:var(--navy2); border:1px solid rgba(255,255,255,0.07); border-radius:var(--radius-xl); padding:48px 40px; width:100%; max-width:420px; text-align:center; }
     .login-title { color:#fff; font-family:'Montserrat',sans-serif; font-size:22px; font-weight:800; margin-bottom:8px; }
     .login-sub { color:rgba(255,255,255,0.38); font-size:14px; line-height:1.6; margin-bottom:36px; }
-    .login-tag { display:inline-block; background:rgba(74,253,14,0.12); color:var(--green); font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:6px 18px; border-radius:6px; margin-bottom:20px; }
+    .login-tag { display:inline-block; background:rgba(74,253,14,0.12); color:var(--green); font-family:'Montserrat',sans-serif; font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; padding:4px 12px; border-radius:4px; margin-bottom:20px; }
     .btn-ms { display:flex; align-items:center; justify-content:center; gap:12px; width:100%; padding:14px 20px; background:#fff; color:var(--text); border:none; border-radius:var(--radius); font-family:'Montserrat',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:0.02em; transition:all 0.2s; }
     .btn-ms:hover { background:#f0f4ff; transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,0.2); }
     .login-err { margin-top:14px; background:rgba(192,57,43,0.14); border:1px solid rgba(192,57,43,0.3); border-radius:var(--radius); padding:10px 14px; color:#ffa0a0; font-size:13px; display:none; line-height:1.5; }
@@ -145,7 +145,7 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
-    <img src="/trilogy-logo.png" alt="Trilogy" style="height:38px;display:block;margin:0 auto 24px">
+    <img src="/trilogy-logo.png" alt="Trilogy" style="height:34px;margin-bottom:24px">
     <div class="login-tag">MIS Dashboard</div>
     <div class="login-title">Campaign Reporting</div>
     <div class="login-sub">Sign in with your Trilogy Microsoft account to access your campaign dashboards.</div>
@@ -400,12 +400,6 @@ function renderDashboard(session) {
           <div class="rc-icon teal">⏱</div>
           <div class="rc-title">Queue Analysis</div>
           <div class="rc-sub">Queue wait times, handle times and department distribution.</div>
-          <div class="rc-arrow">View report →</div>
-        </a>
-        <a class="report-card" href="nadclinic/sla.html?campaign=${encodeURIComponent(campaign)}">
-          <div class="rc-icon" style="background:#fef3c7">📋</div>
-          <div class="rc-title">SLA Dashboard</div>
-          <div class="rc-sub">Voice service level, AHT, CSAT and productivity vs targets.</div>
           <div class="rc-arrow">View report →</div>
         </a>
         ${isAdmin ? `
