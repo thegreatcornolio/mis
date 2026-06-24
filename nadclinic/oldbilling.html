@@ -33,12 +33,6 @@
     .hero-label{color:var(--green);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:6px}
     .hero-title{color:#fff;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;line-height:1.15}
     .hero-sub{color:rgba(255,255,255,.38);font-size:13px;margin-top:4px}
-    /* RANGE BUTTONS */
-    .range-nav{display:flex;align-items:center;gap:6px}
-    .range-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.7);height:34px;padding:0 14px;border-radius:var(--radius);cursor:pointer;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:600;transition:all .15s}
-    .range-btn:hover{background:rgba(255,255,255,.14)}
-    .range-btn.active-range{background:rgba(74,253,14,.15);border-color:rgba(74,253,14,.4);color:var(--green)}
-    .hero-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
     /* MONTH NAV */
     .month-nav{display:flex;align-items:center;gap:0;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius);overflow:hidden}
     .month-arrow{background:transparent;border:none;color:rgba(255,255,255,.6);height:36px;width:36px;font-size:16px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
@@ -121,7 +115,7 @@
       <div class="nav-divider"></div>
       <div class="nav-section">MIS Dashboard</div>
       <div class="nav-divider"></div>
-      <a class="nav-back" href="../index.html">← Campaigns</a>
+      <a class="nav-back" href="../oldindex.html">← Campaigns</a>
     </div>
     <div class="nav-right">
       <div class="nav-avatar" id="nav-av"></div>
@@ -139,17 +133,10 @@
         <div class="hero-title">Billing Report</div>
         <div class="hero-sub" id="hero-sub">Loading…</div>
       </div>
-      <div class="hero-controls">
-        <div class="range-nav">
-          <button class="range-btn" onclick="setRange('day',this)">Yesterday</button>
-          <button class="range-btn" onclick="setRange('week',this)">7 days</button>
-          <button class="range-btn active-range" onclick="setRange('mtd',this)">MTD</button>
-        </div>
-        <div class="month-nav" id="month-nav-wrap">
-          <button class="month-arrow" id="prev-month" onclick="changeMonth(-1)">‹</button>
-          <div class="month-label" id="month-label">—</div>
-          <button class="month-arrow" id="next-month" onclick="changeMonth(1)" disabled>›</button>
-        </div>
+      <div class="month-nav">
+        <button class="month-arrow" id="prev-month" onclick="changeMonth(-1)">‹</button>
+        <div class="month-label" id="month-label">—</div>
+        <button class="month-arrow" id="next-month" onclick="changeMonth(1)" disabled>›</button>
       </div>
     </div>
   </div>
@@ -227,7 +214,7 @@ function fmtDate(iso){if(!iso)return'—';return new Date(iso+'T00:00:00').toLoc
 function badgeClass(pct){if(pct>=95)return'badge-green';if(pct>=80)return'badge-orange';return'badge-red';}
 function barClass(pct){if(pct>=95)return'green';if(pct>=80)return'orange';return'red';}
 
-let S = { session:null, campaign:'NADClinic', monthOffset:0, rangeMode:'mtd', chart:null };
+let S = { session:null, campaign:'NADClinic', monthOffset:0, chart:null };
 
 window.addEventListener('DOMContentLoaded', () => {
   const raw = sessionStorage.getItem(SESSION_KEY);
@@ -257,36 +244,14 @@ function setTabNav(active){
   ].map(([id,lbl,href])=>`<a class="tab-link${id===active?' active':''}" href="${href}">${lbl}</a>`).join('');
 }
 
-function getDateRange(){
+function getMonthRange(){
   const now = new Date();
-  const yesterday = new Date(now); yesterday.setDate(yesterday.getDate()-1);
-  if(S.rangeMode==='day'){
-    return { dateFrom:localDate(yesterday), dateTo:localDate(yesterday), label:'Yesterday', isMTD:false };
-  }
-  if(S.rangeMode==='week'){
-    const from = new Date(yesterday); from.setDate(from.getDate()-6);
-    return { dateFrom:localDate(from), dateTo:localDate(yesterday), label:'Last 7 days', isMTD:false };
-  }
-  // MTD or historical month
   const y = now.getFullYear();
   const m = now.getMonth() + S.monthOffset;
-  const first = new Date(y,m,1);
-  const isCurrentMonth = S.monthOffset===0;
-  const last = isCurrentMonth ? now : new Date(y,m+1,0);
-  const monthName = first.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
-  return { dateFrom:localDate(first), dateTo:localDate(last), label:isCurrentMonth?'Month to date':monthName, isMTD:isCurrentMonth };
-}
-
-function setRange(mode, btn){
-  S.rangeMode = mode;
-  S.monthOffset = 0;
-  document.querySelectorAll('.range-btn').forEach(b=>b.classList.remove('active-range'));
-  btn.classList.add('active-range');
-  // Show month nav only for MTD so user can go back to previous months
-  document.getElementById('month-nav-wrap').style.opacity = mode==='mtd' ? '1' : '0.3';
-  document.getElementById('month-nav-wrap').style.pointerEvents = mode==='mtd' ? '' : 'none';
-  updateMonthLabel();
-  loadData();
+  const first = new Date(y, m, 1);
+  const isCurrentMonth = S.monthOffset === 0;
+  const last = isCurrentMonth ? now : new Date(y, m + 1, 0);
+  return { dateFrom: localDate(first), dateTo: localDate(last), isCurrentMonth };
 }
 
 function updateMonthLabel(){
@@ -308,19 +273,18 @@ function signOut(){ sessionStorage.removeItem(SESSION_KEY); window.location.href
 
 async function loadData(){
   document.getElementById('loading-overlay').style.display = 'flex';
-  const { dateFrom, dateTo, label, isMTD } = getDateRange();
+  const { dateFrom, dateTo, isCurrentMonth } = getMonthRange();
   const fromFmt = new Date(dateFrom+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'});
-  const toFmt   = new Date(dateTo+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-  const same = dateFrom===dateTo;
-  document.getElementById('hero-sub').textContent = `${label} · ${same ? toFmt : fromFmt+' – '+toFmt}`;
+  const toFmt = new Date(dateTo+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  document.getElementById('hero-sub').textContent = `${isCurrentMonth ? 'Month to date' : 'Full month'} · ${fromFmt} – ${toFmt}`;
   try {
     const data = await callFlow(FLOWS.GET_BILLING, { campaignCode: S.campaign, dateFrom, dateTo });
     const agents  = data.Table1 || [];
     const daily   = data.Table2 || [];
     const totals  = (data.Table3 || [])[0] || {};
     const imp     = (data.Table4 || [])[0] || {};
-    renderKPIs(totals, agents, isMTD);
-    renderProjection(totals, agents, isMTD);
+    renderKPIs(totals, agents, isCurrentMonth);
+    renderProjection(totals, agents, isCurrentMonth);
     renderTable(agents);
     renderChart(daily);
     renderImport(imp);
