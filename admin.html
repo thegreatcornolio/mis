@@ -438,7 +438,7 @@ function openEditUser(email){
   const active=u.IsActive===1||u.IsActive===true||u.IsActive==='1'||u.IsActive==='true';
   document.getElementById('f-active').checked=active;
   document.getElementById('f-active-label').textContent=active?'Active':'Inactive';
-  const billing=u.BillingAccess===1||u.BillingAccess===true||u.BillingAccess==='1'||u.BillingAccess==='true';
+  const billing=u.billing_access===1||u.billing_access===true||u.billing_access==='1'||u.billing_access==='true';
   document.getElementById('f-billing').checked=billing;
   document.getElementById('f-billing-label').textContent=billing?'Has access':'No access';
   const assigned=(u.Campaigns||'').split(',').filter(Boolean);
