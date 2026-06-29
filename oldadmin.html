@@ -279,7 +279,7 @@
       <table class="import-table">
         <thead>
           <tr>
-            <th>Date</th><th>Campaign</th><th>File type</th><th>Records</th><th>Status</th><th>Imported at</th><th>Error</th>
+            <th>Date</th><th>Campaign</th><th>File type</th><th>Rows</th><th>Status</th><th>Imported at</th><th>Error</th>
           </tr>
         </thead>
         <tbody id="import-tbody">
@@ -300,12 +300,23 @@ const FLOWS={
   DELETE_USER:'https://default77cde95f930f495e89c64d2c30f6df.21.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5da09344686f44668e8f54043d020e42/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=yAHdb0Qk4KiR9qYM6AS5tFhdlemi9stInIhczsi5p-k',
 };
 
-function unwrap(d){return d.body?(typeof d.body==='string'?JSON.parse(d.body):d.body):d;}
+function unwrap(d){
+  if(!d) return {};
+  if(typeof d==='string'){try{return unwrap(JSON.parse(d));}catch{return {};}}
+  if(d.body){return typeof d.body==='string'?unwrap(JSON.parse(d.body)):unwrap(d.body);}
+  return d;
+}
 async function callFlow(url,body={},attempt=0){
-  try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!r.ok){if(r.status>=500&&attempt<3){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw new Error('Flow HTTP '+r.status);}
-  return unwrap(await r.json());}
-  catch(e){if(attempt<3&&!e.message?.startsWith('Flow HTTP')){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw e;}
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){if(r.status>=500&&attempt<3){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw new Error('Flow HTTP '+r.status);}
+    const text=await r.text();
+    console.log('Flow response ('+attempt+'):', text.substring(0,300));
+    if(!text||text==='null'||text==='') return {};
+    try{return unwrap(JSON.parse(text));}
+    catch(e){console.error('Parse failed on:',text.substring(0,200));throw new Error('Response parse error: '+text.substring(0,80));}
+  }
+  catch(e){if(attempt<3&&!e.message?.startsWith('Flow HTTP')&&!e.message?.startsWith('Response parse')){await wait(1200*(attempt+1));return callFlow(url,body,attempt+1);}throw e;}
 }
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 function initials(n){return(n||'?').split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();}
@@ -334,13 +345,20 @@ async function loadData(){
   document.getElementById('loading-overlay').style.display='flex';
   try{
     const raw=await callFlow(FLOWS.GET_DATA,{});
+    console.log('AdminGetData raw type:', typeof raw);
+    console.log('AdminGetData raw keys:', raw ? Object.keys(raw) : 'null');
+    console.log('AdminGetData sample:', JSON.stringify(raw).substring(0,400));
     const data=(raw&&raw.Table1)?raw:(raw&&raw.resultsets)?raw.resultsets:raw||{};
-    S.users    =data.Table1||[];
-    S.campaigns=data.Table2||[];
-    const imports=data.Table3||[];
+    S.users    =Array.isArray(data.Table1)?data.Table1:[];
+    S.campaigns=Array.isArray(data.Table2)?data.Table2:[];
+    const imports=Array.isArray(data.Table3)?data.Table3:[];
+    console.log('Users:', S.users.length, 'Campaigns:', S.campaigns.length, 'Imports:', imports.length);
     renderUsers(S.users);
     renderImports(imports);
-  }catch(err){showToast('Failed to load: '+err.message,'error');}
+  }catch(err){
+    console.error('loadData error:', err);
+    showToast('Failed to load: '+err.message,'error');
+  }
   finally{document.getElementById('loading-overlay').style.display='none';}
 }
 
@@ -479,7 +497,7 @@ function renderImports(rows){
       <td>${fmtDate(r.ReportDate)}</td>
       <td><span class="campaign-tag">${r.CampaignCode}</span></td>
       <td style="font-size:12px">${r.FileType||'—'}</td>
-      <td style="font-family:'Montserrat',sans-serif;font-weight:600">${r.RecordCount||0}</td>
+      <td style="font-family:'Montserrat',sans-serif;font-weight:600">${r.RowsImported||0}</td>
       <td><span class="status-badge ${sClass}">${r.Status}</span></td>
       <td style="font-size:12px;color:var(--text3)">${fmtDateTime(r.ImportedAt)}</td>
       <td style="font-size:12px;color:var(--red);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.ErrorMessage||''}</td>

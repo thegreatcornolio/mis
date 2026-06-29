@@ -161,6 +161,14 @@
           <span id="f-active-label" style="font-size:13px;color:var(--text2)">Active</span>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Billing access</label>
+        <div class="toggle-wrap">
+          <label class="toggle"><input type="checkbox" id="f-billing"><span class="toggle-slider"></span></label>
+          <span id="f-billing-label" style="font-size:13px;color:var(--text2)">No access</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Grants access to the Billing Report page. Off by default.</div>
+      </div>
     </div>
     <div class="modal-footer">
       <button class="btn-cancel" onclick="closeUserModal()">Cancel</button>
@@ -204,7 +212,7 @@
       style="width:100%;padding:13px;background:#fff;color:var(--navy);border:none;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.04em">
       Access Admin Panel
     </button>
-    <div style="margin-top:20px"><a href="oldoldindex.html" style="color:rgba(255,255,255,0.3);font-size:12px;text-decoration:none">← Back to campaigns</a></div>
+    <div style="margin-top:20px"><a href="index.html" style="color:rgba(255,255,255,0.3);font-size:12px;text-decoration:none">← Back to campaigns</a></div>
   </div>
 </div>
 
@@ -218,7 +226,7 @@
       <span class="nav-badge">🔧 Admin Panel</span>
     </div>
     <div class="nav-right">
-      <a class="nav-back" href="oldoldindex.html">← Campaigns</a>
+      <a class="nav-back" href="index.html">← Campaigns</a>
       <div class="nav-avatar" id="nav-av"></div>
       <span class="nav-name" id="nav-name"></span>
       <button class="btn-signout" onclick="signOut()">Sign out</button>
@@ -413,6 +421,8 @@ function openAddUser(){
   document.getElementById('f-role').value='viewer';
   document.getElementById('f-active').checked=true;
   document.getElementById('f-active-label').textContent='Active';
+  document.getElementById('f-billing').checked=false;
+  document.getElementById('f-billing-label').textContent='No access';
   buildCampaignChecks([]);
   document.getElementById('user-modal').classList.add('show');
 }
@@ -428,6 +438,9 @@ function openEditUser(email){
   const active=u.IsActive===1||u.IsActive===true||u.IsActive==='1'||u.IsActive==='true';
   document.getElementById('f-active').checked=active;
   document.getElementById('f-active-label').textContent=active?'Active':'Inactive';
+  const billing=u.BillingAccess===1||u.BillingAccess===true||u.BillingAccess==='1'||u.BillingAccess==='true';
+  document.getElementById('f-billing').checked=billing;
+  document.getElementById('f-billing-label').textContent=billing?'Has access':'No access';
   const assigned=(u.Campaigns||'').split(',').filter(Boolean);
   buildCampaignChecks(assigned);
   document.getElementById('user-modal').classList.add('show');
@@ -450,13 +463,14 @@ async function saveUser(){
   const displayName=document.getElementById('f-name').value.trim();
   const role=document.getElementById('f-role').value;
   const isActive=document.getElementById('f-active').checked?1:0;
+  const billingAccess=document.getElementById('f-billing').checked?1:0;
   const campaigns=Array.from(document.querySelectorAll('#campaign-checks input:checked')).map(i=>i.value).join(',');
   if(!email||!displayName){showToast('Email and display name are required.','error');return;}
   closeUserModal();
   document.getElementById('load-txt').textContent='Saving user…';
   document.getElementById('loading-overlay').style.display='flex';
   try{
-    await callFlow(FLOWS.SAVE_USER,{email,displayName,role,campaigns,isActive});
+    await callFlow(FLOWS.SAVE_USER,{email,displayName,role,campaigns,isActive,billingAccess});
     showToast(S.editTarget?'User updated.':'User added.','success');
     await loadData();
   }catch(err){
